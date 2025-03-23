@@ -20,9 +20,13 @@ export type Response<T> = {
   message?: string;
 };
 
-// Інші функції залишаються незмінними...
+// Оголошуємо тип для matchStage
+interface MatchStage {
+  title?: { $regex: string; $options: string };
+  questionsCount?: { $gt: number };
+  completions?: { $gt: number };
+}
 
-// src/server/actions.ts
 export const getAllQuizzes = async (
   page: number,
   sort: string,
@@ -35,7 +39,7 @@ export const getAllQuizzes = async (
   try {
     await connectDb();
 
-    const matchStage: any = {};
+    const matchStage: MatchStage = {}; // Використовуємо конкретний тип
     if (filters?.search) {
       matchStage.title = { $regex: filters.search, $options: "i" };
     }
@@ -261,7 +265,6 @@ export const getQuizStatistics = async (
       { $project: { date: "$_id", count: 1, _id: 0 } },
     ]);
 
-    // Відповіді на кожне запитання
     const questions = await Promise.all(
       quiz.questions.map(async (question) => {
         const answers = await Result.aggregate([
